@@ -1,6 +1,3 @@
-Что выведет программа? Объяснить вывод программы.
-
-```go
 package main
 
 import (
@@ -9,7 +6,7 @@ import (
 	"time"
 )
 
-func asChan(vs ...int) <-chan int {
+func asChan(vs ...int) chan int {
 	c := make(chan int)
 
 	go func() {
@@ -23,15 +20,22 @@ func asChan(vs ...int) <-chan int {
 	return c
 }
 
-func merge(a, b <-chan int) <-chan int {
+func merge(a, b chan int) <-chan int {
 	c := make(chan int)
 	go func() {
 		for {
-			
 			select {
-			case v := <-a:
+			case v, ok := <-a:
+				if !ok {
+					close(c)
+					return
+				}
 				c <- v
-			case v := <-b:
+			case v, ok := <-b:
+				if !ok {
+					close(c)
+					return
+				}
 				c <- v
 			}
 		}
@@ -42,17 +46,9 @@ func merge(a, b <-chan int) <-chan int {
 func main() {
 
 	a := asChan(1, 3, 5, 7)
-	b := asChan(2, 4 ,6, 8)
-	c := merge(a, b )
+	b := asChan(2, 4, 6, 8)
+	c := merge(a, b)
 	for v := range c {
 		fmt.Println(v)
 	}
 }
-```
-
-Ответ:
-```
-Программа объединяет каналы и выводит их значения. З
-...
-
-```
